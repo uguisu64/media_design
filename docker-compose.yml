@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  influxdb:
+    image: influxdb:3.2-core
+    container_name: influxdb-container
+    volumes:
+      - ./influxdb_data:/var/lib/influxdb2
+    environment:
+      - INFLUXDB3_AUTH_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
+    command: >
+      serve
+      --object-store file
+      --data-dir /var/lib/influxdb2
+      --node-id local-node-1
+    restart: unless-stopped
+
+  sveltekit:
+    container_name: sveltekit-dev-container
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - INFLUX_HOST=http://influxdb:8181
+      - INFLUXDB3_AUTH_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUX_ORG=${INFLUXDB_ORG}
+      - INFLUX_DB=${INFLUXDB_BUCKET}
+    depends_on:
+      - influxdb
+    restart: unless-stopped
