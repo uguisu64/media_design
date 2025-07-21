@@ -14,6 +14,7 @@ export const GET = async({ url }) => {
     const start = url.searchParams.get('start')
     const end = url.searchParams.get('end')
     const cameraIds = url.searchParams.getAll('id')
+    const limit = url.searchParams.get('limit')
 
     const measurement = 'people_count'
     const whereClauses = []
@@ -42,7 +43,13 @@ export const GET = async({ url }) => {
     if (whereClauses.length > 0) {
       query += ` WHERE ${whereClauses.join(' AND ')}`;
     }
-    query += ` ORDER BY "time" DESC LIMIT 10000`
+    if (limit) {
+        query += ` ORDER BY "time" DESC LIMIT ${limit}`
+    }
+    else {
+        query += ` ORDER BY "time" DESC LIMIT 10000`
+    }
+    
 
     try {
         const reader = await influxDBClient.query(query)
